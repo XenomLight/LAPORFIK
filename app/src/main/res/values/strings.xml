@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">AppLaporFIK</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="beranda">Beranda</string>
+    <string name="profil">Profil</string>
+    <string-array name="panduan_options">
+        <item>Cara Mengisi Form Lapor</item>
+        <item>Cara Melihat Status Laporan</item>
+        <item>Cara Mengubah Profil</item>
+    </string-array>
+
+    <string name="hallo_pengguna">Halo, Budi Putra!</string>
+    <string name="form_lapor">Form Lapor</string>
+    <string name="hasil_lapor">Hasil Lapor</string>
+
+    <string name="logo_upn">Logo Universitas Pembangunan Nasional</string>
+    <string name="panduan_penggunaan">PANDUAN PENGGUNAAN</string>
+
+
+</resources>

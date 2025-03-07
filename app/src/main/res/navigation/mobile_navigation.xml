@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_beranda">
+
+    <fragment
+        android:id="@+id/navigation_beranda"
+        android:name="com.example.applaporfik.ui.home.HomeFragment"
+        android:label="@string/beranda"
+        tools:layout="@layout/fragment_beranda" />
+
+    <fragment
+        android:id="@+id/navigation_profil"
+        android:name="com.example.applaporfik.ui.profil.ProfilFragment"
+        android:label="@string/profil"
+        tools:layout="@layout/fragment_profil" />
+
+    <fragment
+        android:id="@+id/formFragment"
+        android:name="com.example.applaporfik.ui.form.FormFragment"
+        android:label="Form Lapor">
+        <action
+            android:id="@+id/action_formFragment_to_pilihKategoriFragment"
+            app:destination="@id/pilihKategoriFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/pilihKategoriFragment"
+        android:name="com.example.applaporfik.ui.form.PilihKategoriFragment"
+        android:label="Pilih Kategori" />
+
+
+</navigation>

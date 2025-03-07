@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <!-- Halo -->
+        <TextView
+            android:id="@+id/text_sapaan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Halo, Pengguna!"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- Tombol Form & Hasil Lapor -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="20dp">
+
+            <!-- Form Lapor -->
+            <LinearLayout
+                android:id="@+id/btn_form_lapor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/baseline_chat_24"
+                    android:contentDescription="Form Lapor"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Form Lapor"
+                    android:textSize="14sp"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <!-- Hasil Lapor -->
+            <LinearLayout
+                android:id="@+id/btn_hasil_lapor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginStart="24dp"
+                android:background="?attr/selectableItemBackground">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/baseline_document_scanner_24"
+                    android:contentDescription="Hasil Lapor"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hasil Lapor"
+                    android:textSize="14sp"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Panduan Penggunaan -->
+        <!-- -REVISIIII soalnya bertumpuk2 -->
+        <TextView
+            android:id="@+id/text_panduan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PANDUAN PENGGUNAAN"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- Card Panduan 1 -->
+        <LinearLayout
+            android:id="@+id/box_panduan_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/yellow"
+            android:padding="16dp"
+            android:orientation="vertical"
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cara Mengisi Form Lapor"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/text_panduan_1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Deskripsi cara mengisi form laporan."
+                android:paddingTop="10dp"
+                android:visibility="gone"/>
+        </LinearLayout>
+
+        <!-- Card Panduan 2 -->
+        <LinearLayout
+            android:id="@+id/box_panduan_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/yellow"
+            android:padding="16dp"
+            android:orientation="vertical"
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cara Melihat Status Laporan"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/text_panduan_2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Deskripsi cara melihat status laporan."
+                android:paddingTop="10dp"
+                android:visibility="gone"/>
+        </LinearLayout>
+
+        <!-- Card Panduan 3 -->
+        <LinearLayout
+            android:id="@+id/box_panduan_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/yellow"
+            android:padding="16dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cara Mengubah Profil"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/text_panduan_3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Deskripsi cara mengubah profil."
+                android:paddingTop="10dp"
+                android:visibility="gone"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
