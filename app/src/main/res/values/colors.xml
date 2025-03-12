@@ -10,4 +10,8 @@
     <color name="orange">#FFA500</color>
     <color name="yellow">#FFE300</color>
     <color name="grey">#F7F7F7</color>
+    <color name="oren_1">#FF8C00</color>
+    <color name="oren_2">#FFA434</color>
+    <color name="oren_3">#FFCC34</color>
+
 </resources>
