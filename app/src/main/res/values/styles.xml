@@ -8,4 +8,10 @@
         <item name="android:orientation">vertical</item>
         <item name="android:layout_marginBottom">10dp</item>
     </style>
+
+    <style name="judul_notification_admin">
+        <item name="android:layout_width">360dp</item>
+        <item name="android:layout_height">30dp</item>
+        <item name="android:textAlignment">viewStart</item>
+    </style>
 </resources>

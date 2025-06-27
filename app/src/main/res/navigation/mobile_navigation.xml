@@ -3,18 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_beranda">
+    app:startDestination="@+id/navigation_home">
 
     <fragment
-        android:id="@+id/navigation_beranda"
-        android:name="com.example.applaporfik.ui.home.HomeFragment"
-        android:label="@string/beranda"
-        tools:layout="@layout/fragment_beranda" />
+        android:id="@+id/navigation_home"
+        android:name="com.example.applaporfik.fragment.home.HomeFragment"
+        android:label="@string/title_home"
+        tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/navigation_profil"
-        android:name="com.example.applaporfik.ui.profil.ProfilFragment"
-        android:label="@string/profil"
+        android:id="@+id/navigation_profile"
+        android:name="com.example.applaporfik.fragment.profil.ProfilFragment"
+        android:label="@string/title_profile"
         tools:layout="@layout/fragment_profil" />
 
     <fragment
@@ -30,6 +30,5 @@
         android:id="@+id/pilihKategoriFragment"
         android:name="com.example.applaporfik.ui.form.PilihKategoriFragment"
         android:label="Pilih Kategori" />
-
 
 </navigation>

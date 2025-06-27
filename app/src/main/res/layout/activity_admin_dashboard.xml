@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/white">
+
+    <!-- Admin Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="@color/primary_color"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvAdminTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Admin Dashboard"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Logout"
+            android:textSize="14sp"
+            android:padding="8dp"
+            android:backgroundTint="@color/white"
+            android:textColor="@color/primary_color" />
+
+    </LinearLayout>
+
+    <!-- Navigation Container -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment_admin"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph" />
+
+    <!-- Admin Bottom Navigation -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/white"
+        android:elevation="8dp"
+        android:padding="8dp">
+
+        <Button
+            android:id="@+id/btnOverview"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Overview"
+            android:textSize="12sp"
+            android:padding="12dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/bg_card_closed"
+            android:textColor="@color/black" />
+
+        <Button
+            android:id="@+id/btnManageReports"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Manage Reports"
+            android:textSize="12sp"
+            android:padding="12dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/bg_card_closed"
+            android:textColor="@color/black" />
+
+        <Button
+            android:id="@+id/btnReportsList"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Reports List"
+            android:textSize="12sp"
+            android:padding="12dp"
+            android:layout_marginStart="4dp"
+            android:background="@drawable/bg_card_closed"
+            android:textColor="@color/black" />
+
+    </LinearLayout>
+
+</LinearLayout> 

@@ -3,6 +3,7 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="title_profile">Profile</string>
     <string name="beranda">Beranda</string>
     <string name="profil">Profil</string>
     <string-array name="panduan_options">
@@ -17,6 +18,37 @@
 
     <string name="logo_upn">Logo Universitas Pembangunan Nasional</string>
     <string name="panduan_penggunaan">PANDUAN PENGGUNAAN</string>
+
+    <string name="feedback_id_label">ID:</string>
+    <string name="feedback_category_label">Category:</string>
+    <string name="feedback_title_label">Title:</string>
+    <string name="feedback_date_label">Date:</string>
+    <string name="feedback_description_label">Description:</string>
+    <string name="admin_feedback_hint">Type your feedback here…</string>
+    <string name="send_button_text">Send</string>
+
+    <string name="status_reported">Reported</string>
+    <string name="status_finished">Finished</string>
+    <string name="error_feedback_empty">Feedback cannot be empty</string>
+
+    <string name="no_feedback_found">No feedback items found.</string>
+
+    <string name="feedback_sent_confirmation">Feedback sent for %s</string>
+    <string name="status_updated_confirmation">Status updated for %s</string>
+    <string name="filter_by_category">Filter by Category:</string>
+    <string name="category_all">All</string>
+    <string name="category_academic">Academic</string>
+    <string name="category_facility">Facility</string>
+    <string name="filter_by_status">Filter by Status:</string>
+    <string name="status_all">All</string>
+    <string name="sort_by_date">Sort by Date:</string>
+    <string name="sort_ascending">Oldest First</string>
+    <string name="sort_descending">Newest First</string>
+    <string name="no_feedback_items_match_filters">No feedback items match the current filters.</string>
+
+    <string name="header_background">Header background image</string>
+    <string name="manage_reports_button">Manage feedback reports button</string>
+    <string name="notification_icon">Notification icon</string>
 
 
 </resources>
