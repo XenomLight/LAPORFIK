@@ -1,13 +1,19 @@
 package com.example.applaporfik.data.api
 
 import com.example.applaporfik.model.FeedbackItem
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.RequestBody
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Query
+import java.util.concurrent.TimeUnit
 
 // Data classes for authentication
 data class LoginRequest(val nim: String, val password: String)
@@ -28,6 +34,46 @@ data class UserProfile(
 )
 data class UserProfileResponse(val success: Boolean, val user: UserProfile?, val message: String?)
 
+// Data classes for reports
+data class Report(
+    val id: Int,
+    val user_id: Int,
+    val kategori: String,
+    val judul: String,
+    val rincian: String,
+    val images: List<String>?,
+    val status: String,
+    val feedback: String?,
+    val created_at: String,
+    val updated_at: String,
+    val user_nama: String,
+    val user_nim: String,
+    val user_jurusan: String
+)
+
+data class ReportResponse(val success: Boolean, val reports: List<Report>?, val message: String?)
+data class ReportStatsResponse(val success: Boolean, val stats: ReportStats?, val message: String?)
+
+data class ReportStats(
+    val today: Int,
+    val this_week: Int,
+    val all_time: Int,
+    val unread_count: Int
+)
+
+// Data classes for report submission
+data class SubmitReportRequest(
+    val kategori: String,
+    val judul: String,
+    val rincian: String
+)
+
+data class SubmitReportResponse(
+    val success: Boolean,
+    val message: String?,
+    val report_id: Int?
+)
+
 interface ApiService {
     @GET("feedback")
     suspend fun getFeedbackList(): List<FeedbackItem>
@@ -44,7 +90,42 @@ interface ApiService {
         @Query("nim") nim: String
     ): UserProfileResponse
     
-    // Add more endpoints as needed
+    // Reports endpoints
+    @GET("reports")
+    suspend fun getReports(
+        @Header("Authorization") token: String,
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 10,
+        @Query("status") status: String? = null,
+        @Query("kategori") kategori: String? = null,
+        @Query("sort") sort: String = "created_at",
+        @Query("order") order: String = "desc"
+    ): ReportResponse
+    
+    @GET("reports/latest")
+    suspend fun getLatestReports(
+        @Header("Authorization") token: String,
+        @Query("limit") limit: Int = 2
+    ): ReportResponse
+    
+    @GET("reports/stats")
+    suspend fun getReportStats(
+        @Header("Authorization") token: String
+    ): ReportStatsResponse
+    
+    @POST("reports")
+    suspend fun submitReport(
+        @Header("Authorization") token: String,
+        @Body request: SubmitReportRequest
+    ): SubmitReportResponse
+    
+    @Multipart
+    @POST("reports/upload-images")
+    suspend fun uploadImages(
+        @Header("Authorization") token: String,
+        @Part("report_id") reportId: RequestBody,
+        @Part images: List<MultipartBody.Part>
+    ): SubmitReportResponse
     
     companion object {
         // TODO: Update this URL to your VPS domain
@@ -53,8 +134,16 @@ interface ApiService {
         private const val BASE_URL = "http://70.153.16.232:5000/api/"
         
         fun create(): ApiService {
+            // Create OkHttpClient with timeout settings
+            val okHttpClient = OkHttpClient.Builder()
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .build()
+            
             val retrofit = Retrofit.Builder()
                 .baseUrl(BASE_URL)
+                .client(okHttpClient)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
             

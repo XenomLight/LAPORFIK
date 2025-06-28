@@ -17,6 +17,6 @@
     <color name="chip_finished_background">#FFC8E6C9</color>
     <color name="chip_reported_text">#FFBF360C</color>
     <color name="chip_finished_text">#FF1B5E20</color>
-    <color name="primary_color">#2196F3</color>
+    <color name="primary_color">#FF8C01</color>
     <color name="gray">#757575</color>
 </resources>

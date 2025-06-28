@@ -5,15 +5,22 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.applaporfik.activity.LoginActivity
 import com.example.applaporfik.adapter.RecentFeedbackAdapter
+import com.example.applaporfik.data.api.ApiService
 import com.example.applaporfik.databinding.FragmentHomeBinding
 import com.example.applaporfik.model.FeedbackItem
 import com.example.applaporfik.model.FeedbackCategory
 import com.example.applaporfik.model.FeedbackStatus
+import com.example.applaporfik.util.NetworkUtils
 import com.example.applaporfik.util.SessionManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HomeFragment : Fragment() {
 
@@ -39,7 +46,11 @@ class HomeFragment : Fragment() {
         
         setupRecyclerView()
         setupUI()
-        loadRecentFeedback()
+        
+        // Add a small delay to ensure UI is fully loaded before making network call
+        view.postDelayed({
+            loadRecentFeedback()
+        }, 500) // 500ms delay
     }
 
     private fun setupRecyclerView() {
@@ -84,27 +95,72 @@ class HomeFragment : Fragment() {
         binding.recyclerViewRecentFeedback.visibility = View.GONE
         binding.textEmpty.visibility = View.GONE
 
-        // TODO: Replace with actual API call to get recent feedback
-        // For now, using dummy data
-        val dummyFeedback = listOf(
-            FeedbackItem("FB001", FeedbackCategory.FACILITY, "Broken Chair in Room 301", "2025-01-15", "One of the chairs near the window in Room 301 has a broken leg.", FeedbackStatus.REPORTED),
-            FeedbackItem("FB002", FeedbackCategory.ACADEMIC, "More Calculus Practice Sessions", "2025-01-14", "Could we please have more optional practice sessions for the upcoming Calculus II exam?", FeedbackStatus.REPORTED),
-            FeedbackItem("FB003", FeedbackCategory.FACILITY, "Water Fountain Leak", "2025-01-13", "The water fountain on the 2nd floor near the library is leaking constantly.", FeedbackStatus.FINISHED)
-        )
+        // Get recent feedback from API with timeout
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Check network availability on main thread to avoid blocking
+                val isNetworkAvailable = withContext(Dispatchers.Main) {
+                    NetworkUtils.isNetworkAvailable(requireContext())
+                }
+                
+                if (!isNetworkAvailable) {
+                    withContext(Dispatchers.Main) {
+                        binding.progressBar.visibility = View.GONE
+                        binding.textEmpty.visibility = View.VISIBLE
+                        binding.textEmpty.text = "No internet connection"
+                    }
+                    return@launch
+                }
 
-        // Simulate network delay
-        view?.postDelayed({
-            binding.progressBar.visibility = View.GONE
-            
-            if (dummyFeedback.isEmpty()) {
-                binding.textEmpty.visibility = View.VISIBLE
-                binding.recyclerViewRecentFeedback.visibility = View.GONE
-            } else {
-                binding.textEmpty.visibility = View.GONE
-                binding.recyclerViewRecentFeedback.visibility = View.VISIBLE
-                recentFeedbackAdapter.submitList(dummyFeedback)
+                val apiService = ApiService.create()
+                val response = apiService.getLatestReports(
+                    token = "Bearer ${sessionManager.getSessionInfo()?.token ?: ""}",
+                    limit = 3
+                )
+
+                withContext(Dispatchers.Main) {
+                    binding.progressBar.visibility = View.GONE
+                    
+                    if (response.success && response.reports != null && response.reports.isNotEmpty()) {
+                        // Convert Report objects to FeedbackItem objects
+                        val feedbackItems = response.reports.map { report ->
+                            FeedbackItem(
+                                id = report.id.toString(),
+                                category = when (report.kategori.lowercase()) {
+                                    "facility" -> FeedbackCategory.FACILITY
+                                    "academic" -> FeedbackCategory.ACADEMIC
+                                    else -> FeedbackCategory.FACILITY
+                                },
+                                title = report.judul,
+                                date = report.created_at.substring(0, 10), // Get just the date part
+                                description = report.rincian,
+                                status = when (report.status.lowercase()) {
+                                    "pending" -> FeedbackStatus.REPORTED
+                                    "completed" -> FeedbackStatus.FINISHED
+                                    else -> FeedbackStatus.REPORTED
+                                }
+                            )
+                        }
+                        
+                        binding.textEmpty.visibility = View.GONE
+                        binding.recyclerViewRecentFeedback.visibility = View.VISIBLE
+                        recentFeedbackAdapter.submitList(feedbackItems)
+                    } else {
+                        binding.textEmpty.visibility = View.VISIBLE
+                        binding.recyclerViewRecentFeedback.visibility = View.GONE
+                        binding.textEmpty.text = "No Reports"
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    binding.progressBar.visibility = View.GONE
+                    binding.textEmpty.visibility = View.VISIBLE
+                    binding.textEmpty.text = "No Reports"
+                    // Don't show error toast to avoid ANR, just log it
+                    e.printStackTrace()
+                }
             }
-        }, 1000)
+        }
     }
 
     override fun onResume() {

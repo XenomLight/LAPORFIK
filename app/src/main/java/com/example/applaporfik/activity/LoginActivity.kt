@@ -43,6 +43,30 @@ class LoginActivity : AppCompatActivity() {
 
         // Restore remember me state if available
         binding.cbRememberMe.isChecked = sessionManager.isRememberMeEnabled()
+        
+        // Setup password visibility toggle
+        setupPasswordVisibilityToggle()
+    }
+
+    private fun setupPasswordVisibilityToggle() {
+        var isPasswordVisible = false
+        
+        binding.eyeIcon.setOnClickListener {
+            isPasswordVisible = !isPasswordVisible
+            
+            if (isPasswordVisible) {
+                // Show password
+                binding.etPassword.inputType = android.text.InputType.TYPE_CLASS_TEXT
+                binding.eyeIcon.setImageResource(com.example.applaporfik.R.drawable.ic_eye_open)
+            } else {
+                // Hide password
+                binding.etPassword.inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+                binding.eyeIcon.setImageResource(com.example.applaporfik.R.drawable.ic_eye_closed)
+            }
+            
+            // Move cursor to end of text
+            binding.etPassword.setSelection(binding.etPassword.text.length)
+        }
     }
 
     private fun setupLoginButton() {

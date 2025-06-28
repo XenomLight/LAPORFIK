@@ -2,58 +2,62 @@ package com.example.applaporfik.activity
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.applaporfik.R
 import com.example.applaporfik.util.SessionManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SplashActivity : AppCompatActivity() {
-    
+
     private lateinit var sessionManager: SessionManager
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
         sessionManager = SessionManager(this)
 
-        try {
-            // Show splash for 2 seconds then navigate based on login status
-            Handler(Looper.getMainLooper()).postDelayed({
-                navigateBasedOnLoginStatus()
-            }, 2000) // 2000ms = 2 seconds
-        } catch (e: Exception) {
-            // If there's any error, go to login
-            Handler(Looper.getMainLooper()).postDelayed({
-                navigateToLogin()
-            }, 1000)
-        }
-    }
-    
-    private fun navigateBasedOnLoginStatus() {
-        if (sessionManager.isLoggedIn()) {
-            // User is logged in, check role
-            val userRole = sessionManager.getUserRole()
-            if (userRole == "admin") {
-                // Admin goes to admin dashboard
-                val intent = Intent(this, AdminDashboardActivity::class.java)
-                startActivity(intent)
-            } else {
-                // Regular user goes to main activity
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
+        // Use a coroutine to do the work on a background thread.
+        // This prevents blocking the main UI thread and causing an ANR.
+        lifecycleScope.launch {
+            // Non-blocking delay for 2 seconds
+            delay(2000)
+
+            // Determine which activity to navigate to on a background thread
+            val destination = getDestinationActivity()
+
+            // Switch back to the main thread to perform the UI navigation
+            withContext(Dispatchers.Main) {
+                startActivity(Intent(this@SplashActivity, destination))
+                finish() // Close splash activity so user can't go back to it
             }
-        } else {
-            // User is not logged in, go to login
-            navigateToLogin()
         }
-        finish() // Close splash activity so user can't go back to it
     }
 
-    private fun navigateToLogin() {
-        val intent = Intent(this, LoginActivity::class.java)
-        startActivity(intent)
-        finish()
+    /**
+     * Checks the user's login status and role on a background thread.
+     * This is a 'suspend' function, meaning it can be paused and resumed,
+     * which is perfect for background work without blocking the UI.
+     *
+     * @return The class of the Activity to navigate to.
+     */
+    private suspend fun getDestinationActivity(): Class<*> {
+        // Perform the file read (SharedPreferences) on the IO dispatcher (background thread)
+        return withContext(Dispatchers.IO) {
+            if (sessionManager.isLoggedIn()) {
+                val userRole = sessionManager.getUserRole()
+                if (userRole == "admin") {
+                    AdminDashboardActivity::class.java
+                } else {
+                    MainActivity::class.java
+                }
+            } else {
+                LoginActivity::class.java
+            }
+        }
     }
-} 
+}

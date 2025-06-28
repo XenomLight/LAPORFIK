@@ -19,16 +19,8 @@
 
     <fragment
         android:id="@+id/formFragment"
-        android:name="com.example.applaporfik.ui.form.FormFragment"
-        android:label="Form Lapor">
-        <action
-            android:id="@+id/action_formFragment_to_pilihKategoriFragment"
-            app:destination="@id/pilihKategoriFragment" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/pilihKategoriFragment"
-        android:name="com.example.applaporfik.ui.form.PilihKategoriFragment"
-        android:label="Pilih Kategori" />
+        android:name="com.example.applaporfik.fragment.form.FormFragment"
+        android:label="Submit Report"
+        tools:layout="@layout/fragment_form" />
 
 </navigation>

@@ -7,10 +7,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.applaporfik.databinding.ItemFeedbackListBinding
-import com.example.applaporfik.model.FeedbackItem
-import com.example.applaporfik.model.FeedbackStatus
+import com.example.applaporfik.data.api.Report
+import java.text.SimpleDateFormat
+import java.util.Locale
 
-class FeedbackListAdapter : ListAdapter<FeedbackItem, FeedbackListAdapter.FeedbackViewHolder>(FeedbackItemDiffCallback()) {
+class FeedbackListAdapter : ListAdapter<Report, FeedbackListAdapter.FeedbackViewHolder>(FeedbackItemDiffCallback()) {
+
+    private val reports = mutableListOf<Report>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FeedbackViewHolder {
         val binding = ItemFeedbackListBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -22,30 +25,65 @@ class FeedbackListAdapter : ListAdapter<FeedbackItem, FeedbackListAdapter.Feedba
         holder.bind(item)
     }
 
+    fun setReports(newReports: List<Report>) {
+        reports.clear()
+        reports.addAll(newReports)
+        submitList(reports.toList())
+    }
+
+    fun addReports(newReports: List<Report>) {
+        reports.addAll(newReports)
+        submitList(reports.toList())
+    }
+
+    fun clearReports() {
+        reports.clear()
+        submitList(emptyList())
+    }
+
     class FeedbackViewHolder(private val binding: ItemFeedbackListBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: FeedbackItem) {
-            binding.textViewListItemTitle.text = item.title
-            binding.textViewListItemDate.text = item.date
+        fun bind(item: Report) {
+            binding.textViewListItemTitle.text = item.judul
+            binding.textViewListItemDate.text = formatDate(item.created_at)
             
             // Set Status Chip text and background
-            if (item.status == FeedbackStatus.FINISHED) {
-                binding.chipListItemStatus.text = "Finished"
-                binding.chipListItemStatus.setChipBackgroundColorResource(android.R.color.holo_green_light)
-                binding.chipListItemStatus.setTextColor(ContextCompat.getColor(itemView.context, android.R.color.holo_green_dark))
-            } else {
-                binding.chipListItemStatus.text = "Reported"
-                binding.chipListItemStatus.setChipBackgroundColorResource(android.R.color.holo_orange_light)
-                binding.chipListItemStatus.setTextColor(ContextCompat.getColor(itemView.context, android.R.color.holo_orange_dark))
+            when (item.status.lowercase()) {
+                "completed", "finished" -> {
+                    binding.chipListItemStatus.text = "Completed"
+                    binding.chipListItemStatus.setChipBackgroundColorResource(android.R.color.holo_green_light)
+                    binding.chipListItemStatus.setTextColor(ContextCompat.getColor(itemView.context, android.R.color.holo_green_dark))
+                }
+                "in_progress", "processing" -> {
+                    binding.chipListItemStatus.text = "In Progress"
+                    binding.chipListItemStatus.setChipBackgroundColorResource(android.R.color.holo_blue_light)
+                    binding.chipListItemStatus.setTextColor(ContextCompat.getColor(itemView.context, android.R.color.holo_blue_dark))
+                }
+                else -> {
+                    binding.chipListItemStatus.text = "Pending"
+                    binding.chipListItemStatus.setChipBackgroundColorResource(android.R.color.holo_orange_light)
+                    binding.chipListItemStatus.setTextColor(ContextCompat.getColor(itemView.context, android.R.color.holo_orange_dark))
+                }
+            }
+        }
+
+        private fun formatDate(dateString: String): String {
+            return try {
+                val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+                val outputFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+                val date = inputFormat.parse(dateString)
+                outputFormat.format(date ?: return dateString)
+            } catch (e: Exception) {
+                dateString
             }
         }
     }
 
-    private class FeedbackItemDiffCallback : DiffUtil.ItemCallback<FeedbackItem>() {
-        override fun areItemsTheSame(oldItem: FeedbackItem, newItem: FeedbackItem): Boolean {
+    private class FeedbackItemDiffCallback : DiffUtil.ItemCallback<Report>() {
+        override fun areItemsTheSame(oldItem: Report, newItem: Report): Boolean {
             return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: FeedbackItem, newItem: FeedbackItem): Boolean {
+        override fun areContentsTheSame(oldItem: Report, newItem: Report): Boolean {
             return oldItem == newItem
         }
     }
