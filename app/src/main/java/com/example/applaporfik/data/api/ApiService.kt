@@ -4,6 +4,7 @@ import com.example.applaporfik.model.FeedbackItem
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
+import okhttp3.Interceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
@@ -179,11 +180,28 @@ interface ApiService {
         private const val BASE_URL = "http://70.153.16.232:5000/api/"
 
         fun create(): ApiService {
-            // Create OkHttpClient with timeout settings
+            // Custom interceptor to handle 401 responses as successful responses
+            val interceptor = Interceptor { chain ->
+                val request = chain.request()
+                val response = chain.proceed(request)
+                
+                // If response is 401, create a new response with 200 status but keep the original body
+                if (response.code == 401) {
+                    response.newBuilder()
+                        .code(200)
+                        .message("OK")
+                        .build()
+                } else {
+                    response
+                }
+            }
+
+            // Create OkHttpClient with timeout settings and custom interceptor
             val okHttpClient = OkHttpClient.Builder()
                 .connectTimeout(10, TimeUnit.SECONDS)
                 .readTimeout(10, TimeUnit.SECONDS)
                 .writeTimeout(10, TimeUnit.SECONDS)
+                .addInterceptor(interceptor)
                 .build()
 
             val retrofit = Retrofit.Builder()

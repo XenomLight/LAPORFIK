@@ -73,6 +73,15 @@ class OverviewFragment : Fragment() {
             findNavController().navigate(com.example.applaporfik.R.id.feedbackListFragment)
         }
         
+        // Setup refresh buttons
+        binding.btnRefreshNotifications.setOnClickListener {
+            loadLatestReports()
+        }
+        
+        binding.btnRefreshStats.setOnClickListener {
+            loadReportStats()
+        }
+        
         // Setup notification item clicks
         binding.judulNotifikasi1.setOnClickListener {
             if (latestReports.isNotEmpty()) {
@@ -116,11 +125,15 @@ class OverviewFragment : Fragment() {
             return
         }
 
+        // Show loading state
+        binding.btnRefreshNotifications.isEnabled = false
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 if (!NetworkUtils.isNetworkAvailable(requireContext())) {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show()
+                        binding.btnRefreshNotifications.isEnabled = true
                     }
                     return@launch
                 }
@@ -128,15 +141,18 @@ class OverviewFragment : Fragment() {
                 val response = apiService.getLatestReports("Bearer ${sessionInfo.token}")
                 
                 withContext(Dispatchers.Main) {
+                    binding.btnRefreshNotifications.isEnabled = true
                     if (response.success && response.reports != null) {
                         latestReports = response.reports
                         updateLatestReportsUI()
+                        Toast.makeText(context, "Notifications refreshed", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(context, response.message ?: "Failed to load reports", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    binding.btnRefreshNotifications.isEnabled = true
                     Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -175,21 +191,35 @@ class OverviewFragment : Fragment() {
             return
         }
 
+        // Show loading state
+        binding.btnRefreshStats.isEnabled = false
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show()
+                        binding.btnRefreshStats.isEnabled = true
+                    }
                     return@launch
                 }
 
                 val response = apiService.getReportStats("Bearer ${sessionInfo.token}")
                 
                 withContext(Dispatchers.Main) {
+                    binding.btnRefreshStats.isEnabled = true
                     if (response.success && response.stats != null) {
                         updateStatsUI(response.stats)
+                        Toast.makeText(context, "Stats refreshed", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, response.message ?: "Failed to load stats", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
-                // Handle error silently for stats
+                withContext(Dispatchers.Main) {
+                    binding.btnRefreshStats.isEnabled = true
+                    Toast.makeText(context, "Error loading stats: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -235,8 +265,7 @@ class OverviewFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Refresh data when returning to this fragment
-        loadData()
+        // Don't auto-refresh data - admin must manually refresh
     }
 
     override fun onDestroyView() {
