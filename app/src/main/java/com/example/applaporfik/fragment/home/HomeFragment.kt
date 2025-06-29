@@ -9,12 +9,9 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.applaporfik.activity.LoginActivity
-import com.example.applaporfik.adapter.RecentFeedbackAdapter
+import com.example.applaporfik.adapter.UserReportAdapter
 import com.example.applaporfik.data.api.ApiService
 import com.example.applaporfik.databinding.FragmentHomeBinding
-import com.example.applaporfik.model.FeedbackItem
-import com.example.applaporfik.model.FeedbackCategory
-import com.example.applaporfik.model.FeedbackStatus
 import com.example.applaporfik.util.NetworkUtils
 import com.example.applaporfik.util.SessionManager
 import kotlinx.coroutines.CoroutineScope
@@ -29,8 +26,9 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     
-    private lateinit var recentFeedbackAdapter: RecentFeedbackAdapter
+    private lateinit var reportAdapter: UserReportAdapter
     private lateinit var sessionManager: SessionManager
+    private lateinit var apiService: ApiService
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,21 +43,22 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         
         sessionManager = SessionManager(requireContext())
+        apiService = ApiService.create()
         
         setupRecyclerView()
         setupUI()
         
         // Add a small delay to ensure UI is fully loaded before making network call
         view.postDelayed({
-            loadRecentFeedback()
+            loadRecentReports()
         }, 500) // 500ms delay
     }
 
     private fun setupRecyclerView() {
-        recentFeedbackAdapter = RecentFeedbackAdapter()
+        reportAdapter = UserReportAdapter(emptyList())
         binding.recyclerViewRecentFeedback.apply {
             layoutManager = LinearLayoutManager(context)
-            adapter = recentFeedbackAdapter
+            adapter = reportAdapter
         }
     }
 
@@ -96,25 +95,22 @@ class HomeFragment : Fragment() {
                 startActivity(intent)
             }
         }
+
+        // Setup refresh button for both guests and logged-in users
+        binding.btnRefresh.setOnClickListener {
+            loadRecentReports()
+        }
     }
 
-
-
-    private fun loadRecentFeedback() {
+    private fun loadRecentReports() {
         // Show loading
         binding.progressBar.visibility = View.VISIBLE
         binding.recyclerViewRecentFeedback.visibility = View.GONE
         binding.textEmpty.visibility = View.GONE
 
-        // Get recent feedback from API with timeout
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Check network availability on main thread to avoid blocking
-                val isNetworkAvailable = withContext(Dispatchers.Main) {
-                    NetworkUtils.isNetworkAvailable(requireContext())
-                }
-                
-                if (!isNetworkAvailable) {
+                if (!NetworkUtils.isNetworkAvailable(requireContext())) {
                     withContext(Dispatchers.Main) {
                         binding.progressBar.visibility = View.GONE
                         binding.textEmpty.visibility = View.VISIBLE
@@ -123,51 +119,31 @@ class HomeFragment : Fragment() {
                     return@launch
                 }
 
-                val apiService = ApiService.create()
-                val response = apiService.getLatestReports(
-                    token = "Bearer ${sessionManager.getSessionInfo()?.token ?: ""}",
-                    limit = 3
-                )
+                val response = apiService.getReportsPublic(public = "true", limit = 5)
 
                 withContext(Dispatchers.Main) {
                     binding.progressBar.visibility = View.GONE
-                    
-                    if (response.success && response.reports != null && response.reports.isNotEmpty()) {
-                        // Convert Report objects to FeedbackItem objects
-                        val feedbackItems = response.reports.map { report ->
-                            FeedbackItem(
-                                id = report.id.toString(),
-                                category = when (report.kategori.lowercase()) {
-                                    "facility" -> FeedbackCategory.FACILITY
-                                    "academic" -> FeedbackCategory.ACADEMIC
-                                    else -> FeedbackCategory.FACILITY
-                                },
-                                title = report.judul,
-                                date = report.created_at.substring(0, 10), // Get just the date part
-                                description = report.rincian,
-                                status = when (report.status.lowercase()) {
-                                    "pending" -> FeedbackStatus.REPORTED
-                                    "completed" -> FeedbackStatus.FINISHED
-                                    else -> FeedbackStatus.REPORTED
-                                }
-                            )
+                    if (response.success && response.reports != null) {
+                        if (response.reports.isNotEmpty()) {
+                            binding.textEmpty.visibility = View.GONE
+                            binding.recyclerViewRecentFeedback.visibility = View.VISIBLE
+                            reportAdapter.updateData(response.reports)
+                        } else {
+                            binding.textEmpty.visibility = View.VISIBLE
+                            binding.recyclerViewRecentFeedback.visibility = View.GONE
+                            binding.textEmpty.text = "No Reports"
                         }
-                        
-                        binding.textEmpty.visibility = View.GONE
-                        binding.recyclerViewRecentFeedback.visibility = View.VISIBLE
-                        recentFeedbackAdapter.submitList(feedbackItems)
                     } else {
                         binding.textEmpty.visibility = View.VISIBLE
                         binding.recyclerViewRecentFeedback.visibility = View.GONE
-                        binding.textEmpty.text = "No Reports"
+                        binding.textEmpty.text = response.message ?: "Failed to load reports"
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     binding.progressBar.visibility = View.GONE
                     binding.textEmpty.visibility = View.VISIBLE
-                    binding.textEmpty.text = " "
-                    // Don't show error toast to avoid ANR, just log it
+                    binding.textEmpty.text = "Unable to load reports"
                     e.printStackTrace()
                 }
             }

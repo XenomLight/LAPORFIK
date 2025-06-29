@@ -119,49 +119,37 @@ class ProfilFragment : Fragment() {
             return
         }
         
-        // Show loading state
-        _loggedInBinding?.tvUserName?.text = "Loading..."
-        _loggedInBinding?.tvUserRole?.text = "Loading..."
-        _loggedInBinding?.tvUserEmail?.text = "Loading..."
+        // Use local session credentials for immediate display
+        _loggedInBinding?.tvUserName?.text = sessionInfo.userName
+        _loggedInBinding?.tvUserRole?.text = sessionInfo.userRole.replaceFirstChar { it.uppercase() }
+        _loggedInBinding?.tvUserEmail?.text = "${sessionInfo.nim}@mahasiswa.upnvj.ac.id"
+        _loggedInBinding?.tvUserNim?.text = sessionInfo.nim
         
+        // Load default profile image
+        loadProfileImage(null)
+        
+        // Optionally, try to get additional data from API in background (non-blocking)
+        loadAdditionalProfileData(sessionInfo)
+    }
+    
+    private fun loadAdditionalProfileData(sessionInfo: com.example.applaporfik.util.SessionInfo) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = apiService.getUserProfile("Bearer ${sessionInfo.token}", sessionInfo.nim)
                 
                 withContext(Dispatchers.Main) {
                     if (response.success && response.user != null) {
-                        // Update the UI with user data from API
-                        _loggedInBinding?.tvUserName?.text = response.user.nama
-                        _loggedInBinding?.tvUserRole?.text = response.user.role.replaceFirstChar { it.uppercase() }
-                        _loggedInBinding?.tvUserEmail?.text = response.user.gmail ?: "${response.user.nim}@student.upn.ac.id"
-                        _loggedInBinding?.tvUserNim?.text = response.user.nim
+                        // Update additional data that might not be in session
                         _loggedInBinding?.tvUserJurusan?.text = response.user.jurusan
                         
-                        // Load profile image
+                        // Load profile image if available
                         loadProfileImage(response.user.profile_url)
-                    } else {
-                        // Fallback to session data
-                        _loggedInBinding?.tvUserName?.text = sessionInfo.nim
-                        _loggedInBinding?.tvUserRole?.text = sessionInfo.userRole.replaceFirstChar { it.uppercase() }
-                        _loggedInBinding?.tvUserEmail?.text = "${sessionInfo.nim}@student.upn.ac.id"
-                        
-                        // Load default profile image
-                        loadProfileImage(null)
-                        
-                        Toast.makeText(context, "Failed to load profile data", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
+                // Silently fail - we already have basic data from session
                 withContext(Dispatchers.Main) {
-                    // Fallback to session data
-                    _loggedInBinding?.tvUserName?.text = sessionInfo.nim
-                    _loggedInBinding?.tvUserRole?.text = sessionInfo.userRole.replaceFirstChar { it.uppercase() }
-                    _loggedInBinding?.tvUserEmail?.text = "${sessionInfo.nim}@student.upn.ac.id"
-                    
-                    // Load default profile image
-                    loadProfileImage(null)
-                    
-                    Toast.makeText(context, "Network error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    _loggedInBinding?.tvUserJurusan?.text = "Information not available"
                 }
             }
         }
@@ -189,8 +177,8 @@ class ProfilFragment : Fragment() {
     }
 
     private fun logoutUser() {
-        // Clear user session
-        sessionManager.clearSession()
+        // Clear all user data including stored credentials
+        sessionManager.clearAllData()
         
         // Show not logged in layout
         _loggedInBinding?.root?.let { binding.root.removeView(it) }

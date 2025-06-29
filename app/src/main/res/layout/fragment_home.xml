@@ -179,16 +179,35 @@ a
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Recent Feedback List -->
-<!--        <TextView-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="Recent Feedback"-->
-<!--            android:textSize="18sp"-->
-<!--            android:textStyle="bold"-->
-<!--            android:textColor="@color/black"-->
-<!--            android:layout_marginBottom="12dp" />-->
+        <!-- Recent Reports Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp"
+            android:gravity="center_vertical">
 
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Recent Reports"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/black" />
+
+            <ImageButton
+                android:id="@+id/btn_refresh"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_refresh"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Refresh reports"
+                android:padding="8dp" />
+
+        </LinearLayout>
+
+        <!-- Recent Feedback List -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view_recent_feedback"
             android:layout_width="match_parent"

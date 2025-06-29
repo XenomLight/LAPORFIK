@@ -28,6 +28,9 @@ class LoginActivity : AppCompatActivity() {
         apiService = ApiService.create()
         sessionManager = SessionManager(this)
 
+        // Start the app lifecycle service to detect app removal
+        startService(Intent(this, com.example.applaporfik.AppLifecycleService::class.java))
+
         setupUI()
         setupLoginButton()
         setupAdditionalButtons()
@@ -38,6 +41,13 @@ class LoginActivity : AppCompatActivity() {
         if (sessionManager.isLoggedIn()) {
             // User is already logged in, go to main activity
             navigateToMainActivity()
+            return
+        }
+
+        // Check if there are stored credentials and remember me was enabled
+        if (sessionManager.hasStoredCredentials() && sessionManager.isRememberMeEnabled()) {
+            // Restore session from stored credentials
+            restoreSessionFromStoredCredentials()
             return
         }
 
@@ -129,6 +139,7 @@ class LoginActivity : AppCompatActivity() {
                         sessionManager.saveSession(
                             token = response.token ?: "",
                             nim = nim, // Use NIM for session
+                            userName = response.user?.nama ?: "User",
                             userRole = response.role ?: "user",
                             rememberMe = rememberMe,
                             sessionDuration = sessionDuration
@@ -175,5 +186,25 @@ class LoginActivity : AppCompatActivity() {
     private fun resetLoginButton() {
         binding.btnLogin.isEnabled = true
         binding.btnLogin.text = "Login"
+    }
+
+    private fun restoreSessionFromStoredCredentials() {
+        val storedCredentials = sessionManager.getStoredCredentials()
+        if (storedCredentials != null) {
+            // Restore session with stored credentials
+            val sessionDuration = 30L * 24L * 60L * 60L * 1000L // 30 days for remember me
+            
+            sessionManager.saveSession(
+                token = "", // Will be updated when making API calls
+                nim = storedCredentials.nim,
+                userName = storedCredentials.userName,
+                userRole = storedCredentials.userRole,
+                rememberMe = true,
+                sessionDuration = sessionDuration
+            )
+            
+            // Navigate to appropriate dashboard
+            navigateToMainActivity()
+        }
     }
 } 

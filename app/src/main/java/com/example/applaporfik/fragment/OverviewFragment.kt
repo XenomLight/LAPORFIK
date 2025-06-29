@@ -41,14 +41,28 @@ class OverviewFragment : Fragment() {
         apiService = ApiService.create()
         sessionManager = SessionManager(requireContext())
         
+        // Check if user is still logged in
+        if (!sessionManager.isLoggedIn()) {
+            // Navigate to login activity
+            val intent = android.content.Intent(requireContext(), com.example.applaporfik.activity.LoginActivity::class.java)
+            intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            return
+        }
+        
         setupUI()
         loadData()
     }
 
     private fun setupUI() {
-        // Set admin name
-        val adminNim = sessionManager.getNim() ?: "Admin"
-        binding.textViewAdminName.text = adminNim
+        // Set admin name (first name only) from local session
+        val sessionInfo = sessionManager.getSessionInfo()
+        if (sessionInfo != null) {
+            val firstName = sessionInfo.userName.split(" ").firstOrNull() ?: "Admin"
+            binding.textViewAdminName.text = firstName
+        } else {
+            binding.textViewAdminName.text = "Admin"
+        }
         
         // Setup click listeners
         binding.buttonManageReport.setOnClickListener {
@@ -79,9 +93,26 @@ class OverviewFragment : Fragment() {
     }
 
     private fun loadLatestReports() {
+        // Check if user is still logged in
+        if (!sessionManager.isLoggedIn()) {
+            val intent = android.content.Intent(requireContext(), com.example.applaporfik.activity.LoginActivity::class.java)
+            intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            return
+        }
+
+        // Check if token needs refresh
+        if (sessionManager.needsTokenRefresh()) {
+            refreshTokenAndLoadData()
+            return
+        }
+
         val sessionInfo = sessionManager.getSessionInfo()
         if (sessionInfo == null) {
-            Toast.makeText(context, "Session not available", Toast.LENGTH_SHORT).show()
+            // Session info is null, redirect to login
+            val intent = android.content.Intent(requireContext(), com.example.applaporfik.activity.LoginActivity::class.java)
+            intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
             return
         }
 
@@ -112,10 +143,35 @@ class OverviewFragment : Fragment() {
         }
     }
 
+    private fun refreshTokenAndLoadData() {
+        // For now, redirect to login to get fresh token
+        // In a production app, you might want to implement token refresh API
+        val intent = android.content.Intent(requireContext(), com.example.applaporfik.activity.LoginActivity::class.java)
+        intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+    }
+
     private fun loadReportStats() {
+        // Check if user is still logged in
+        if (!sessionManager.isLoggedIn()) {
+            val intent = android.content.Intent(requireContext(), com.example.applaporfik.activity.LoginActivity::class.java)
+            intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            return
+        }
+
+        // Check if token needs refresh
+        if (sessionManager.needsTokenRefresh()) {
+            refreshTokenAndLoadData()
+            return
+        }
+
         val sessionInfo = sessionManager.getSessionInfo()
         if (sessionInfo == null) {
-            Toast.makeText(context, "Session not available", Toast.LENGTH_SHORT).show()
+            // Session info is null, redirect to login
+            val intent = android.content.Intent(requireContext(), com.example.applaporfik.activity.LoginActivity::class.java)
+            intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
             return
         }
 

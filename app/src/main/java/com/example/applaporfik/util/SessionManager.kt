@@ -7,8 +7,10 @@ class SessionManager(context: Context) {
     
     companion object {
         private const val PREF_NAME = "app_session"
+        private const val PREF_USER_DATA = "user_data"
         private const val KEY_TOKEN = "token"
         private const val KEY_NIM = "nim"
+        private const val KEY_USER_NAME = "user_name"
         private const val KEY_USER_ROLE = "user_role"
         private const val KEY_REMEMBER_ME = "remember_me"
         private const val KEY_IS_LOGGED_IN = "is_logged_in"
@@ -20,7 +22,9 @@ class SessionManager(context: Context) {
     }
     
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+    private val userDataPreferences: SharedPreferences = context.getSharedPreferences(PREF_USER_DATA, Context.MODE_PRIVATE)
     private val editor: SharedPreferences.Editor = sharedPreferences.edit()
+    private val userDataEditor: SharedPreferences.Editor = userDataPreferences.edit()
     
     /**
      * Save user session data
@@ -28,6 +32,7 @@ class SessionManager(context: Context) {
     fun saveSession(
         token: String,
         nim: String,
+        userName: String,
         userRole: String,
         rememberMe: Boolean = false,
         sessionDuration: Long = DEFAULT_SESSION_DURATION
@@ -35,11 +40,20 @@ class SessionManager(context: Context) {
         editor.apply {
             putString(KEY_TOKEN, token)
             putString(KEY_NIM, nim)
+            putString(KEY_USER_NAME, userName)
             putString(KEY_USER_ROLE, userRole)
             putBoolean(KEY_REMEMBER_ME, rememberMe)
             putBoolean(KEY_IS_LOGGED_IN, true)
             putLong(KEY_LOGIN_TIME, System.currentTimeMillis())
             putLong(KEY_SESSION_DURATION, sessionDuration)
+            apply()
+        }
+        
+        // Save user credentials to separate storage for persistence
+        userDataEditor.apply {
+            putString(KEY_NIM, nim)
+            putString(KEY_USER_NAME, userName)
+            putString(KEY_USER_ROLE, userRole)
             apply()
         }
     }
@@ -60,7 +74,7 @@ class SessionManager(context: Context) {
             val currentTime = System.currentTimeMillis()
             
             if (currentTime - loginTime > sessionDuration) {
-                // Session expired, clear session
+                // Session expired, clear session but keep user data if remember me was enabled
                 clearSession()
                 return false
             }
@@ -81,6 +95,13 @@ class SessionManager(context: Context) {
      */
     fun getNim(): String? {
         return sharedPreferences.getString(KEY_NIM, null)
+    }
+    
+    /**
+     * Get user name
+     */
+    fun getUserName(): String? {
+        return sharedPreferences.getString(KEY_USER_NAME, null)
     }
     
     /**
@@ -106,6 +127,7 @@ class SessionManager(context: Context) {
         return SessionInfo(
             token = getToken() ?: return null,
             nim = getNim() ?: return null,
+            userName = getUserName() ?: return null,
             userRole = getUserRole() ?: return null,
             rememberMe = isRememberMeEnabled(),
             loginTime = sharedPreferences.getLong(KEY_LOGIN_TIME, 0),
@@ -114,10 +136,44 @@ class SessionManager(context: Context) {
     }
     
     /**
-     * Clear user session
+     * Clear user session (but keep user data if remember me is enabled)
      */
     fun clearSession() {
+        val rememberMe = sharedPreferences.getBoolean(KEY_REMEMBER_ME, false)
+        
+        // Clear session data
         editor.clear().apply()
+        
+        // If remember me is not enabled, also clear user data
+        if (!rememberMe) {
+            userDataEditor.clear().apply()
+        }
+    }
+    
+    /**
+     * Clear all data including user credentials
+     */
+    fun clearAllData() {
+        editor.clear().apply()
+        userDataEditor.clear().apply()
+    }
+    
+    /**
+     * Check if user credentials exist in local storage
+     */
+    fun hasStoredCredentials(): Boolean {
+        return userDataPreferences.getString(KEY_NIM, null) != null
+    }
+    
+    /**
+     * Get stored user credentials
+     */
+    fun getStoredCredentials(): StoredCredentials? {
+        val nim = userDataPreferences.getString(KEY_NIM, null) ?: return null
+        val userName = userDataPreferences.getString(KEY_USER_NAME, null) ?: return null
+        val userRole = userDataPreferences.getString(KEY_USER_ROLE, null) ?: return null
+        
+        return StoredCredentials(nim, userName, userRole)
     }
     
     /**
@@ -151,6 +207,21 @@ class SessionManager(context: Context) {
         val remainingTime = getRemainingSessionTime()
         return remainingTime > 0 && remainingTime < 60 * 60 * 1000 // 1 hour
     }
+    
+    /**
+     * Check if token needs to be refreshed (empty or null token)
+     */
+    fun needsTokenRefresh(): Boolean {
+        val token = getToken()
+        return token.isNullOrEmpty()
+    }
+    
+    /**
+     * Update token without changing other session data
+     */
+    fun updateToken(newToken: String) {
+        editor.putString(KEY_TOKEN, newToken).apply()
+    }
 }
 
 /**
@@ -159,8 +230,18 @@ class SessionManager(context: Context) {
 data class SessionInfo(
     val token: String,
     val nim: String,
+    val userName: String,
     val userRole: String,
     val rememberMe: Boolean,
     val loginTime: Long,
     val sessionDuration: Long
+)
+
+/**
+ * Data class to hold stored user credentials
+ */
+data class StoredCredentials(
+    val nim: String,
+    val userName: String,
+    val userRole: String
 ) 

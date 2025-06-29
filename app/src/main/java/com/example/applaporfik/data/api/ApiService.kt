@@ -121,6 +121,17 @@ interface ApiService {
         @Header("Authorization") token: String
     ): ReportStatsResponse
 
+    @GET("reports/recent")
+    suspend fun getRecentReportsPublic(
+        @Query("limit") limit: Int = 5
+    ): ReportResponse
+
+    @GET("reports")
+    suspend fun getReportsPublic(
+        @Query("public") public: String = "true",
+        @Query("limit") limit: Int = 5
+    ): ReportResponse
+
     @POST("reports")
     suspend fun submitReport(
         @Header("Authorization") token: String,

@@ -56,7 +56,8 @@ class SplashActivity : AppCompatActivity() {
                     MainActivity::class.java
                 }
             } else {
-                LoginActivity::class.java
+                // Always go to MainActivity for guest access
+                MainActivity::class.java
             }
         }
     }

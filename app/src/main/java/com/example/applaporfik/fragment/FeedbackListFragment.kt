@@ -53,6 +53,15 @@ class FeedbackListFragment : Fragment() {
         apiService = ApiService.create()
         sessionManager = SessionManager(requireContext())
         
+        // Check if user is still logged in
+        if (!sessionManager.isLoggedIn()) {
+            // Navigate to login activity
+            val intent = android.content.Intent(requireContext(), com.example.applaporfik.activity.LoginActivity::class.java)
+            intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            return
+        }
+        
         setupRecyclerView()
         setupFilterChips()
         setupSortSpinner()
@@ -145,12 +154,29 @@ class FeedbackListFragment : Fragment() {
     private fun loadReports() {
         if (isLoading) return
         
+        // Check if user is still logged in
+        if (!sessionManager.isLoggedIn()) {
+            val intent = android.content.Intent(requireContext(), com.example.applaporfik.activity.LoginActivity::class.java)
+            intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            return
+        }
+        
+        // Check if token needs refresh
+        if (sessionManager.needsTokenRefresh()) {
+            refreshTokenAndLoadData()
+            return
+        }
+        
         isLoading = true
         showLoading(true)
         
         val sessionInfo = sessionManager.getSessionInfo()
         if (sessionInfo == null) {
-            Toast.makeText(context, "Session not available", Toast.LENGTH_SHORT).show()
+            // Session info is null, redirect to login
+            val intent = android.content.Intent(requireContext(), com.example.applaporfik.activity.LoginActivity::class.java)
+            intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
             return
         }
 
@@ -198,6 +224,14 @@ class FeedbackListFragment : Fragment() {
                 isLoading = false
             }
         }
+    }
+
+    private fun refreshTokenAndLoadData() {
+        // For now, redirect to login to get fresh token
+        // In a production app, you might want to implement token refresh API
+        val intent = android.content.Intent(requireContext(), com.example.applaporfik.activity.LoginActivity::class.java)
+        intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
     }
 
     private fun loadMoreReports() {

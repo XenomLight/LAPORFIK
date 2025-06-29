@@ -23,6 +23,9 @@ class AdminDashboardActivity : AppCompatActivity() {
 
         sessionManager = SessionManager(this)
 
+        // Start the app lifecycle service to detect app removal
+        startService(Intent(this, com.example.applaporfik.AppLifecycleService::class.java))
+
         try {
             // Check if user is logged in and is admin
             if (!sessionManager.isLoggedIn()) {
@@ -52,8 +55,14 @@ class AdminDashboardActivity : AppCompatActivity() {
     }
 
     private fun setupUI() {
-        // Set admin title
-        binding.tvAdminTitle.text = "Admin Dashboard"
+        // Set personalized admin title with first name from local session
+        val sessionInfo = sessionManager.getSessionInfo()
+        if (sessionInfo != null) {
+            val firstName = sessionInfo.userName.split(" ").firstOrNull() ?: "Admin"
+            binding.tvAdminTitle.text = "Welcome, $firstName!"
+        } else {
+            binding.tvAdminTitle.text = "Welcome, Admin!"
+        }
         
         // Set up logout button
         binding.btnLogout.setOnClickListener {
@@ -103,7 +112,7 @@ class AdminDashboardActivity : AppCompatActivity() {
     }
 
     private fun logout() {
-        sessionManager.clearSession()
+        sessionManager.clearAllData() // Clear all data including stored credentials
         Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
         navigateToLogin()
     }

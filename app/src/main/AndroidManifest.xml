@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
+        android:name=".LaporFikApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -58,6 +59,11 @@
         <activity 
             android:name=".activity.UserDashboardActivity"
             android:theme="@style/Theme.AppLaporFIK"
+            android:exported="false" />
+
+        <!-- App Lifecycle Service -->
+        <service
+            android:name=".AppLifecycleService"
             android:exported="false" />
 
     </application>

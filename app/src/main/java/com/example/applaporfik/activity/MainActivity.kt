@@ -34,17 +34,17 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         sessionManager = SessionManager(this)
 
-        try {
-            if (!sessionManager.isLoggedIn()) {
-                navigateToLogin()
-                return
-            }
+        // Start the app lifecycle service to detect app removal
+        startService(Intent(this, com.example.applaporfik.AppLifecycleService::class.java))
 
-            if (sessionManager.getUserRole() == "admin") {
+        try {
+            // Check if user is admin and redirect if needed
+            if (sessionManager.isLoggedIn() && sessionManager.getUserRole() == "admin") {
                 navigateToAdminDashboard()
                 return
             }
 
+            // Allow both logged-in users and guests to access MainActivity
             val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
             if (navHostFragment != null) {
                 navController = navHostFragment.navController
@@ -52,17 +52,35 @@ class MainActivity : AppCompatActivity() {
                 navController.addOnDestinationChangedListener { _, destination, _ ->
                     when (destination.id) {
                         R.id.formFragment -> {
+                            // Check if user is logged in before allowing form access
+                            if (!sessionManager.isLoggedIn()) {
+                                Toast.makeText(this, "Please login to submit a report", Toast.LENGTH_SHORT).show()
+                                navigateToLogin()
+                                return@addOnDestinationChangedListener
+                            }
                             supportActionBar?.setDisplayHomeAsUpEnabled(true)
                             supportActionBar?.title = "Fill the form"
                         }
                         R.id.userReportPagerFragment -> {
+                            // Check if user is logged in before allowing report access
+                            if (!sessionManager.isLoggedIn()) {
+                                Toast.makeText(this, "Please login to view your reports", Toast.LENGTH_SHORT).show()
+                                navigateToLogin()
+                                return@addOnDestinationChangedListener
+                            }
                             supportActionBar?.setDisplayHomeAsUpEnabled(true)
                             supportActionBar?.title = "Report Detail"
                         }
                         else -> {
                             supportActionBar?.setDisplayHomeAsUpEnabled(false)
-                            val userNim = sessionManager.getNim() ?: "User"
-                            supportActionBar?.title = "Welcome, $userNim"
+                            // Use local session credentials for immediate display
+                            val sessionInfo = sessionManager.getSessionInfo()
+                            if (sessionInfo != null) {
+                                val firstName = sessionInfo.userName.split(" ").firstOrNull() ?: "User"
+                                supportActionBar?.title = "Welcome, $firstName!"
+                            } else {
+                                supportActionBar?.title = "Welcome to LaporFIK!"
+                            }
                         }
                     }
                 }
@@ -123,7 +141,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun logout() {
-        sessionManager.clearSession()
+        sessionManager.clearAllData()
         Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
         navigateToLogin()
     }
@@ -143,7 +161,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        Toast.makeText(this, "Please use logout to exit", Toast.LENGTH_SHORT).show()
+        if (sessionManager.isLoggedIn()) {
+            Toast.makeText(this, "Please use logout to exit", Toast.LENGTH_SHORT).show()
+        } else {
+            // For guest users, allow normal back button behavior
+            super.onBackPressed()
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -151,10 +174,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
-        val currentDestination = navController.currentDestination
-        if (currentDestination != null && currentDestination.id == R.id.formFragment) {
-            menu?.clear()
+        // Only show menu for logged-in users
+        if (sessionManager.isLoggedIn()) {
+            menuInflater.inflate(R.menu.menu_main, menu)
+            val currentDestination = navController.currentDestination
+            if (currentDestination != null && currentDestination.id == R.id.formFragment) {
+                menu?.clear()
+            }
         }
         return true
     }
