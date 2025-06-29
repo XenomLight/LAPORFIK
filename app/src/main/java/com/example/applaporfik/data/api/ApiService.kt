@@ -13,6 +13,8 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Query
+import retrofit2.http.PATCH
+import retrofit2.http.Path
 import java.util.concurrent.TimeUnit
 
 // Data classes for authentication
@@ -24,12 +26,12 @@ data class RegisterResponse(val success: Boolean, val message: String?)
 
 // Data classes for user profile
 data class UserProfile(
-    val id: Int, 
-    val nama: String, 
-    val nim: String, 
-    val jurusan: String, 
-    val gmail: String?, 
-    val profile_url: String?, 
+    val id: Int,
+    val nama: String,
+    val nim: String,
+    val jurusan: String,
+    val gmail: String?,
+    val profile_url: String?,
     val role: String
 )
 data class UserProfileResponse(val success: Boolean, val user: UserProfile?, val message: String?)
@@ -77,19 +79,19 @@ data class SubmitReportResponse(
 interface ApiService {
     @GET("feedback")
     suspend fun getFeedbackList(): List<FeedbackItem>
-    
+
     @POST("auth/login")
     suspend fun login(@Body request: LoginRequest): LoginResponse
-    
+
     @POST("auth/register")
     suspend fun register(@Body request: RegisterRequest): RegisterResponse
-    
+
     @GET("user/profile")
     suspend fun getUserProfile(
         @Header("Authorization") token: String,
         @Query("nim") nim: String
     ): UserProfileResponse
-    
+
     // Reports endpoints
     @GET("reports")
     suspend fun getReports(
@@ -101,24 +103,24 @@ interface ApiService {
         @Query("sort") sort: String = "created_at",
         @Query("order") order: String = "desc"
     ): ReportResponse
-    
+
     @GET("reports/latest")
     suspend fun getLatestReports(
         @Header("Authorization") token: String,
         @Query("limit") limit: Int = 2
     ): ReportResponse
-    
+
     @GET("reports/stats")
     suspend fun getReportStats(
         @Header("Authorization") token: String
     ): ReportStatsResponse
-    
+
     @POST("reports")
     suspend fun submitReport(
         @Header("Authorization") token: String,
         @Body request: SubmitReportRequest
     ): SubmitReportResponse
-    
+
     @Multipart
     @POST("reports/upload-images")
     suspend fun uploadImages(
@@ -126,13 +128,20 @@ interface ApiService {
         @Part("report_id") reportId: RequestBody,
         @Part images: List<MultipartBody.Part>
     ): SubmitReportResponse
-    
+
+    @PATCH("reports/{id}/feedback")
+    suspend fun sendFeedback(
+        @Path("id") reportId: Int,
+        @Header("Authorization") token: String,
+        @Body feedbackRequest: FeedbackRequest
+    ): SubmitReportResponse
+
     companion object {
         // TODO: Update this URL to your VPS domain
         // For local development: "http://10.0.2.2:5000/api/"
         // For production: "https://your-domain.com/api/"
         private const val BASE_URL = "http://70.153.16.232:5000/api/"
-        
+
         fun create(): ApiService {
             // Create OkHttpClient with timeout settings
             val okHttpClient = OkHttpClient.Builder()
@@ -140,13 +149,13 @@ interface ApiService {
                 .readTimeout(10, TimeUnit.SECONDS)
                 .writeTimeout(10, TimeUnit.SECONDS)
                 .build()
-            
+
             val retrofit = Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .client(okHttpClient)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
-            
+
             return retrofit.create(ApiService::class.java)
         }
     }

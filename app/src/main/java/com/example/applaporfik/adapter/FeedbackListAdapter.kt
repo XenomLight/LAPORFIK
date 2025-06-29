@@ -10,6 +10,7 @@ import com.example.applaporfik.databinding.ItemFeedbackListBinding
 import com.example.applaporfik.data.api.Report
 import java.text.SimpleDateFormat
 import java.util.Locale
+import com.example.applaporfik.data.api.FeedbackRequest
 
 class FeedbackListAdapter : ListAdapter<Report, FeedbackListAdapter.FeedbackViewHolder>(FeedbackItemDiffCallback()) {
 

@@ -1,10 +1,18 @@
+// FIX: navController.navigateUp() does not accept NavOptions.
+// Replace with the correct call without parameters.
+
 package com.example.applaporfik.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import com.example.applaporfik.R
 import com.example.applaporfik.databinding.ActivityMainBinding
@@ -21,30 +29,42 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Hide the status bar for full immersive mode
+        WindowInsetsControllerCompat(window, window.decorView).let { controller ->
+            controller.hide(android.view.WindowInsets.Type.statusBars())
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+
+        setSupportActionBar(binding.toolbar)
         sessionManager = SessionManager(this)
 
         try {
-            // Check if user is logged in
             if (!sessionManager.isLoggedIn()) {
                 navigateToLogin()
                 return
             }
 
-            // Check if user is admin (shouldn't be here if admin)
             if (sessionManager.getUserRole() == "admin") {
                 navigateToAdminDashboard()
                 return
             }
 
-            // Set up navigation
-            val navHostFragment = supportFragmentManager
-                .findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
+            val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
             if (navHostFragment != null) {
                 navController = navHostFragment.navController
-                
-                // Set up custom bottom navigation
+
+                navController.addOnDestinationChangedListener { _, destination, _ ->
+                    if (destination.id == R.id.formFragment) {
+                        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                        supportActionBar?.title = "Fill the form"
+                    } else {
+                        supportActionBar?.setDisplayHomeAsUpEnabled(false)
+                        val userNim = sessionManager.getNim() ?: "User"
+                        supportActionBar?.title = "Welcome, $userNim"
+                    }
+                }
+
                 setupBottomNavigation()
-                setupUserUI()
             } else {
                 Toast.makeText(this, "Navigation error", Toast.LENGTH_SHORT).show()
                 navigateToLogin()
@@ -55,37 +75,33 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupUserUI() {
-        // Set user title
-        val userNim = sessionManager.getNim() ?: "User"
-        binding.tvUserTitle.text = "Welcome, $userNim"
-        
-        // Set up logout button
-        binding.btnLogout.setOnClickListener {
-            logout()
-        }
-    }
-
     private fun setupBottomNavigation() {
         binding.btnHome.setOnClickListener {
-            navController.navigate(R.id.navigation_home)
+            navController.navigate(R.id.navigation_home, null, getNavAnimation())
             updateButtonStates(true, false)
         }
 
         binding.btnProfile.setOnClickListener {
-            navController.navigate(R.id.navigation_profile)
+            navController.navigate(R.id.navigation_profile, null, getNavAnimation())
             updateButtonStates(false, true)
         }
 
-        // Set initial state (Home is selected by default)
         updateButtonStates(true, false)
+    }
+
+    private fun getNavAnimation(): NavOptions {
+        return NavOptions.Builder()
+            .setEnterAnim(android.R.anim.fade_in)
+            .setExitAnim(android.R.anim.fade_out)
+            .setPopEnterAnim(android.R.anim.fade_in)
+            .setPopExitAnim(android.R.anim.fade_out)
+            .build()
     }
 
     private fun updateButtonStates(homeSelected: Boolean, profileSelected: Boolean) {
         binding.btnHome.isSelected = homeSelected
         binding.btnProfile.isSelected = profileSelected
-        
-        // Update button colors based on selection
+
         if (homeSelected) {
             binding.btnHome.setBackgroundColor(resources.getColor(android.R.color.holo_blue_light, null))
             binding.btnHome.setTextColor(resources.getColor(android.R.color.white, null))
@@ -124,7 +140,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        // Prevent going back to login screen
         Toast.makeText(this, "Please use logout to exit", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        navController.navigateUp() // FIXED: removed NavOptions parameter, not supported
+        return true
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        val currentDestination = navController.currentDestination
+        if (currentDestination != null && currentDestination.id == R.id.formFragment) {
+            menu?.clear()
+        }
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_logout -> {
+                logout()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 }

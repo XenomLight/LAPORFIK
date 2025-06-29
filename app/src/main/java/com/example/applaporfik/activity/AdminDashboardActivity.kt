@@ -68,7 +68,7 @@ class AdminDashboardActivity : AppCompatActivity() {
         }
 
         binding.btnManageReports.setOnClickListener {
-            navController.navigate(R.id.manageFeedbackFragment)
+            navController.navigate(R.id.adminManageReportFragment)
             updateButtonStates(false, true, false)
         }
 

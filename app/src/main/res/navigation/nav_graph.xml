@@ -2,27 +2,33 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/your_nav_graph" app:startDestination="@id/overviewFragment">
+    android:id="@+id/your_nav_graph"
+    app:startDestination="@id/overviewFragment">
 
+    <!-- Overview Fragment -->
     <fragment
         android:id="@+id/overviewFragment"
         android:name="com.example.applaporfik.fragment.OverviewFragment"
         android:label="Overview"
         tools:layout="@layout/fragment_overview">
+
         <action
             android:id="@+id/action_overview_to_manage"
-            app:destination="@id/manageFeedbackFragment" />
+            app:destination="@id/adminManageReportFragment" />
+
         <action
             android:id="@+id/action_overview_to_feedback_list"
             app:destination="@id/feedbackListFragment" />
     </fragment>
 
+    <!-- Admin Manage Report Fragment (NEW) -->
     <fragment
-        android:id="@+id/manageFeedbackFragment"
-        android:name="com.example.applaporfik.fragment.ManageFeedbackFragment"
-        android:label="Manage Feedback"
-        tools:layout="@layout/fragment_manage_feedback" />
+        android:id="@+id/adminManageReportFragment"
+        android:name="com.example.applaporfik.fragment.admin.AdminManageReportFragment"
+        android:label="Manage Reports"
+        tools:layout="@layout/fragment_admin_manage_report" />
 
+    <!-- Feedback List Fragment -->
     <fragment
         android:id="@+id/feedbackListFragment"
         android:name="com.example.applaporfik.fragment.FeedbackListFragment"
