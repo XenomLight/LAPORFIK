@@ -23,4 +23,18 @@
         android:label="Submit Report"
         tools:layout="@layout/fragment_form" />
 
+    <fragment
+        android:id="@+id/userReportPagerFragment"
+        android:name="com.example.applaporfik.fragment.user.UserReportPagerFragment"
+        android:label="My Reports"
+        tools:layout="@layout/fragment_user_report_pager" />
+
+
+    <fragment
+        android:id="@+id/userReportDetailFragment"
+        android:name="com.example.applaporfik.fragment.user.UserReportDetailFragment"
+        android:label="Detail Report"
+        tools:layout="@layout/fragment_user_report_detail" />
+
+
 </navigation>

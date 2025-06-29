@@ -68,7 +68,7 @@ class AdminDashboardActivity : AppCompatActivity() {
         }
 
         binding.btnManageReports.setOnClickListener {
-            navController.navigate(R.id.adminManageReportFragment)
+            navController.navigate(R.id.adminManageReportPagerFragment)
             updateButtonStates(false, true, false)
         }
 

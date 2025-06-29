@@ -2,26 +2,23 @@ package com.example.applaporfik.adapter
 
 import android.app.AlertDialog
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
-import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.applaporfik.data.api.ApiService
-import com.example.applaporfik.data.api.Report
+import com.example.applaporfik.data.api.*
 import com.example.applaporfik.databinding.ItemAdminManageReportBinding
-import com.example.applaporfik.util.NetworkUtils
 import com.example.applaporfik.util.SessionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.example.applaporfik.data.api.FeedbackRequest
-
 
 class AdminManageReportAdapter(
-    private val onItemClick: (reportId: Int) -> Unit
+    private val onDataChanged: () -> Unit
 ) : ListAdapter<Report, AdminManageReportAdapter.ViewHolder>(ReportDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -30,94 +27,191 @@ class AdminManageReportAdapter(
             parent,
             false
         )
-        return ViewHolder(binding, onItemClick)
+        return ViewHolder(binding, onDataChanged)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
-    class ViewHolder(
+    inner class ViewHolder(
         private val binding: ItemAdminManageReportBinding,
-        private val onItemClick: (reportId: Int) -> Unit
+        private val onDataChanged: () -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: Report) {
             binding.textTitle.text = item.judul
             binding.textCategory.text = item.kategori.capitalize()
             binding.textDate.text = item.created_at.substring(0, 10)
-            binding.textStatus.text = item.status.capitalize()
+            binding.textDescription.text = item.rincian
 
-            val statusColor = when (item.status) {
+            binding.textStatus.text = item.status.capitalize()
+            val color = when (item.status) {
                 "pending" -> android.R.color.holo_orange_dark
                 "in_progress" -> android.R.color.holo_blue_dark
                 "resolved" -> android.R.color.holo_green_dark
                 "rejected" -> android.R.color.holo_red_dark
                 else -> android.R.color.darker_gray
             }
-            binding.textStatus.setTextColor(itemView.context.getColor(statusColor))
+            binding.textStatus.setTextColor(itemView.context.getColor(color))
 
-            // Hide button if already resolved
-            binding.buttonSendFeedback.visibility =
-                if (item.status == "resolved" || item.status == "rejected") ViewGroup.GONE else ViewGroup.VISIBLE
-
-            binding.buttonSendFeedback.setOnClickListener {
-                val context = itemView.context
-                val input = EditText(context)
-                input.hint = "Enter feedback"
-
-                AlertDialog.Builder(context)
-                    .setTitle("Send Feedback")
-                    .setView(input)
-                    .setPositiveButton("Send") { _, _ ->
-                        val feedback = input.text.toString().trim()
-                        if (feedback.isNotEmpty()) {
-                            sendFeedbackToServer(item.id, feedback)
-                        } else {
-                            Toast.makeText(context, "Feedback cannot be empty", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    .setNegativeButton("Cancel", null)
-                    .show()
+            if (!item.feedback.isNullOrEmpty()) {
+                binding.textFeedback.visibility = View.VISIBLE
+                binding.textFeedback.text = "Feedback: ${item.feedback}"
+            } else {
+                binding.textFeedback.visibility = View.GONE
             }
 
-            itemView.setOnClickListener {
-                onItemClick(item.id)
+            if (!item.images.isNullOrEmpty()) {
+                binding.recyclerViewImages.visibility = View.VISIBLE
+                binding.recyclerViewImages.layoutManager = LinearLayoutManager(
+                    itemView.context,
+                    LinearLayoutManager.HORIZONTAL,
+                    false
+                )
+                val imageAdapter = ImagePreviewAdapter(
+                    isEditable = false,
+                    onImageClick = { imageUrl ->
+                        Toast.makeText(itemView.context, "Preview: $imageUrl", Toast.LENGTH_SHORT).show()
+                    }
+                )
+                imageAdapter.setUrlImages(item.images ?: emptyList())
+                binding.recyclerViewImages.adapter = imageAdapter
+            } else {
+                binding.recyclerViewImages.visibility = View.GONE
+            }
+
+            when (item.status) {
+                "pending" -> {
+                    binding.buttonSendFeedback.visibility = View.VISIBLE
+                    binding.buttonSendFeedback.text = "MARK / REJECT"
+                    binding.buttonSendFeedback.setOnClickListener {
+                        showStatusChoiceDialog(item.id)
+                    }
+                }
+                "in_progress" -> {
+                    binding.buttonSendFeedback.visibility = View.VISIBLE
+                    binding.buttonSendFeedback.text = "SEND FEEDBACK"
+                    binding.buttonSendFeedback.setOnClickListener {
+                        showFeedbackDialog(item.id, "resolved")
+                    }
+                }
+                else -> {
+                    binding.buttonSendFeedback.visibility = View.GONE
+                }
             }
         }
 
-        private fun sendFeedbackToServer(reportId: Int, feedback: String) {
+        private fun showStatusChoiceDialog(reportId: Int) {
+            val context = itemView.context
+            val options = arrayOf("Mark In Progress", "Reject Feedback")
+
+            AlertDialog.Builder(context)
+                .setTitle("Choose Action")
+                .setItems(options) { _, which ->
+                    when (which) {
+                        0 -> updateStatus(reportId, "in_progress")
+                        1 -> showFeedbackDialog(reportId, "rejected")
+                    }
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+
+        private fun showFeedbackDialog(reportId: Int, statusAfter: String) {
+            val context = itemView.context
+            val input = EditText(context)
+            input.hint = if (statusAfter == "rejected") "Reason for rejection" else "Feedback"
+
+            AlertDialog.Builder(context)
+                .setTitle(if (statusAfter == "rejected") "Reject Feedback" else "Send Feedback")
+                .setView(input)
+                .setPositiveButton("Send") { _, _ ->
+                    val feedback = input.text.toString().trim()
+                    if (feedback.isNotEmpty()) {
+                        sendFeedbackAndUpdateStatus(reportId, feedback, statusAfter)
+                    } else {
+                        Toast.makeText(context, "Input cannot be empty", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+
+        private fun sendFeedbackAndUpdateStatus(reportId: Int, feedback: String, statusAfter: String) {
             val context = itemView.context
             val sessionManager = SessionManager(context)
             val sessionInfo = sessionManager.getSessionInfo()
             val apiService = ApiService.create()
 
-            if (sessionInfo == null) {
-                Toast.makeText(context, "Session expired. Please login again.", Toast.LENGTH_SHORT).show()
-                return
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val responseFeedback = apiService.sendFeedback(
+                        reportId,
+                        "Bearer ${sessionInfo?.token}",
+                        FeedbackRequest(feedback)
+                    )
+                    withContext(Dispatchers.Main) {
+                        if (responseFeedback.success) {
+                            updateStatusWithFeedback(reportId, statusAfter, feedback)
+                        } else {
+                            Toast.makeText(context, responseFeedback.message ?: "Failed to send feedback", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
+        }
+
+        private fun updateStatusWithFeedback(reportId: Int, status: String, feedback: String) {
+            val context = itemView.context
+            val sessionManager = SessionManager(context)
+            val sessionInfo = sessionManager.getSessionInfo()
+            val apiService = ApiService.create()
 
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    if (!NetworkUtils.isNetworkAvailable(context)) {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(context, "No internet connection.", Toast.LENGTH_SHORT).show()
-                        }
-                        return@launch
-                    }
-
-                    val response = apiService.sendFeedback(
-                        reportId = reportId,
-                        token = "Bearer ${sessionInfo.token}",
-                        feedbackRequest = FeedbackRequest(feedback)
+                    val response = apiService.updateReportStatus(
+                        reportId,
+                        "Bearer ${sessionInfo?.token}",
+                        StatusRequest(status, feedback)
                     )
-
-
                     withContext(Dispatchers.Main) {
                         if (response.success) {
-                            Toast.makeText(context, "Feedback sent successfully!", Toast.LENGTH_SHORT).show()
+                            onDataChanged()
                         } else {
-                            Toast.makeText(context, response.message ?: "Failed to send feedback", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, response.message ?: "Failed to update status", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+
+        private fun updateStatus(reportId: Int, status: String) {
+            val context = itemView.context
+            val sessionManager = SessionManager(context)
+            val sessionInfo = sessionManager.getSessionInfo()
+            val apiService = ApiService.create()
+
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val response = apiService.updateReportStatus(
+                        reportId,
+                        "Bearer ${sessionInfo?.token}",
+                        StatusRequest(status)
+                    )
+                    withContext(Dispatchers.Main) {
+                        if (response.success) {
+                            onDataChanged()
+                        } else {
+                            Toast.makeText(context, response.message ?: "Failed to update status", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } catch (e: Exception) {
@@ -129,11 +223,10 @@ class AdminManageReportAdapter(
         }
     }
 
-    private class ReportDiffCallback : DiffUtil.ItemCallback<Report>() {
+    private class ReportDiffCallback : androidx.recyclerview.widget.DiffUtil.ItemCallback<Report>() {
         override fun areItemsTheSame(oldItem: Report, newItem: Report): Boolean {
             return oldItem.id == newItem.id
         }
-
         override fun areContentsTheSame(oldItem: Report, newItem: Report): Boolean {
             return oldItem == newItem
         }

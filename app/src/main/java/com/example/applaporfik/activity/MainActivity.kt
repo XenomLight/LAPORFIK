@@ -1,13 +1,9 @@
-// FIX: navController.navigateUp() does not accept NavOptions.
-// Replace with the correct call without parameters.
-
 package com.example.applaporfik.activity
 
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowInsetsControllerCompat
@@ -29,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Hide the status bar for full immersive mode
+        // Hide status bar for immersive experience
         WindowInsetsControllerCompat(window, window.decorView).let { controller ->
             controller.hide(android.view.WindowInsets.Type.statusBars())
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
@@ -54,13 +50,20 @@ class MainActivity : AppCompatActivity() {
                 navController = navHostFragment.navController
 
                 navController.addOnDestinationChangedListener { _, destination, _ ->
-                    if (destination.id == R.id.formFragment) {
-                        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-                        supportActionBar?.title = "Fill the form"
-                    } else {
-                        supportActionBar?.setDisplayHomeAsUpEnabled(false)
-                        val userNim = sessionManager.getNim() ?: "User"
-                        supportActionBar?.title = "Welcome, $userNim"
+                    when (destination.id) {
+                        R.id.formFragment -> {
+                            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                            supportActionBar?.title = "Fill the form"
+                        }
+                        R.id.userReportPagerFragment -> {
+                            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                            supportActionBar?.title = "Report Detail"
+                        }
+                        else -> {
+                            supportActionBar?.setDisplayHomeAsUpEnabled(false)
+                            val userNim = sessionManager.getNim() ?: "User"
+                            supportActionBar?.title = "Welcome, $userNim"
+                        }
                     }
                 }
 
@@ -144,8 +147,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        navController.navigateUp() // FIXED: removed NavOptions parameter, not supported
-        return true
+        return navController.navigateUp()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

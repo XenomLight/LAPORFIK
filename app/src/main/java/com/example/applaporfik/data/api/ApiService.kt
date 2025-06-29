@@ -76,6 +76,12 @@ data class SubmitReportResponse(
     val report_id: Int?
 )
 
+data class ReportDetailResponse(
+    val success: Boolean,
+    val report: Report?,
+    val message: String?
+)
+
 interface ApiService {
     @GET("feedback")
     suspend fun getFeedbackList(): List<FeedbackItem>
@@ -136,6 +142,25 @@ interface ApiService {
         @Body feedbackRequest: FeedbackRequest
     ): SubmitReportResponse
 
+    @GET("reports/{id}")
+    suspend fun getReportById(
+        @Header("Authorization") token: String,
+        @Path("id") reportId: Int
+    ): ReportDetailResponse
+
+    @PATCH("reports/{id}/resolve")
+    suspend fun markReportAsResolved(
+        @Path("id") reportId: Int,
+        @Header("Authorization") token: String
+    ): SubmitReportResponse
+
+    @PATCH("reports/{id}/status")
+    suspend fun updateReportStatus(
+        @Path("id") reportId: Int,
+        @Header("Authorization") token: String,
+        @Body statusRequest: StatusRequest
+    ): SubmitReportResponse
+
     companion object {
         // TODO: Update this URL to your VPS domain
         // For local development: "http://10.0.2.2:5000/api/"
@@ -159,4 +184,4 @@ interface ApiService {
             return retrofit.create(ApiService::class.java)
         }
     }
-} 
+}

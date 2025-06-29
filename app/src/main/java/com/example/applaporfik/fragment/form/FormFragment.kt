@@ -29,6 +29,7 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.io.FileOutputStream
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 
 class FormFragment : Fragment() {
 
@@ -78,21 +79,24 @@ class FormFragment : Fragment() {
         setupFormButtons()
 
     }
-
     private fun setupImageAdapter() {
-        imageAdapter = ImagePreviewAdapter { position ->
-            imageAdapter.removeImage(position)
-            updateImageCount()
-            if (imageAdapter.getImages().isEmpty()) {
-                hideImagePreview()
+        imageAdapter = ImagePreviewAdapter(
+            isEditable = true,
+            onRemoveImage = { position ->
+                imageAdapter.removeImage(position)
+                updateImageCount()
+                if (imageAdapter.getImages().isEmpty()) {
+                    hideImagePreview()
+                }
             }
-        }
-        
+        )
+
         binding.rvImagePreview.apply {
-            layoutManager = GridLayoutManager(context, 3)
+            layoutManager = GridLayoutManager(requireContext(), 3)
             adapter = imageAdapter
         }
     }
+
 
     private fun setupCategoryChips() {
         binding.chipFacility.setOnCheckedChangeListener { _, isChecked ->

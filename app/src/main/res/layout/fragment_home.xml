@@ -19,21 +19,28 @@
             android:orientation="vertical"
             android:paddingBottom="16dp">
 
-            <TextView
+            <ImageView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Recent Feedback"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@color/black" />
+                android:layout_height="70dp"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ikon_laporfik"
+                android:contentDescription="Laporfik Logo" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="See what others are saying about our services"
-                android:textSize="14sp"
-                android:textColor="@color/gray"
-                android:layout_marginTop="4dp" />
+            <!--            <TextView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="LAPORFIK"-->
+<!--                android:textSize="24sp"-->
+<!--                android:textStyle="bold"-->
+<!--                android:textColor="@color/black" />-->
+
+<!--            <TextView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="See what others are saying about our services"-->
+<!--                android:textSize="14sp"-->
+<!--                android:textColor="@color/gray"-->
+<!--                android:layout_marginTop="4dp" />-->
 
         </LinearLayout>
 
@@ -46,7 +53,7 @@
             app:cardCornerRadius="12dp"
             app:cardElevation="4dp"
             app:cardBackgroundColor="@color/primary_color">
-
+a
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -128,15 +135,59 @@
 
         </androidx.cardview.widget.CardView>
 
-        <!-- Recent Feedback List -->
-        <TextView
-            android:layout_width="wrap_content"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_my_reports"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Recent Feedback"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:layout_marginBottom="12dp" />
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/primary_color">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="My Reports"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Check the progress of your submitted reports"
+                    android:textSize="14sp"
+                    android:textColor="@color/white"
+                    android:layout_marginTop="4dp" />
+
+                <Button
+                    android:id="@+id/btn_my_reports"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="View My Reports"
+                    android:layout_marginTop="12dp"
+                    android:textColor="@color/primary_color"
+                    android:backgroundTint="@color/white" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Recent Feedback List -->
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="Recent Feedback"-->
+<!--            android:textSize="18sp"-->
+<!--            android:textStyle="bold"-->
+<!--            android:textColor="@color/black"-->
+<!--            android:layout_marginBottom="12dp" />-->
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view_recent_feedback"

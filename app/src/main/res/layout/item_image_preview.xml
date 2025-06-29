@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_launcher_background" />
+            android:contentDescription="Preview Image" />
 
         <ImageButton
             android:id="@+id/btnRemoveImage"
@@ -25,10 +25,10 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
             android:layout_margin="4dp"
-            android:background="@drawable/bg_icon"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_menu_close_clear_cancel"
-            android:contentDescription="Remove image" />
-
+            android:contentDescription="Remove image"
+            android:visibility="gone" />
     </RelativeLayout>
 
-</androidx.cardview.widget.CardView> 
+</androidx.cardview.widget.CardView>

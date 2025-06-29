@@ -14,4 +14,9 @@
         <item name="android:layout_height">30dp</item>
         <item name="android:textAlignment">viewStart</item>
     </style>
+
+    <style name="TabTextAppearance" parent="TextAppearance.Design.Tab">
+        <item name="android:textSize">12sp</item> <!-- Ukuran lebih kecil -->
+    </style>
+
 </resources>

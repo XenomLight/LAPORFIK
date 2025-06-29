@@ -52,7 +52,7 @@ class OverviewFragment : Fragment() {
         
         // Setup click listeners
         binding.buttonManageReport.setOnClickListener {
-            findNavController().navigate(com.example.applaporfik.R.id.adminManageReportFragment)
+            findNavController().navigate(com.example.applaporfik.R.id.adminManageReportPagerFragment)
         }
         
         binding.buttonViewAllReport.setOnClickListener {

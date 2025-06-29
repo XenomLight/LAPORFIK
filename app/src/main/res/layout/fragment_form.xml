@@ -11,16 +11,6 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-<!--        <ImageButton-->
-<!--            android:id="@+id/btnBack"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:src="@android:drawable/ic_media_previous"-->
-<!--            android:contentDescription="Back"-->
-<!--            android:background="?attr/selectableItemBackgroundBorderless"-->
-<!--            android:layout_gravity="start"-->
-<!--            android:layout_marginBottom="16dp" />-->
-
         <!-- Header -->
         <TextView
             android:layout_width="wrap_content"
@@ -63,10 +53,8 @@
                 android:layout_marginStart="8dp"
                 android:text="Academic"
                 android:checkable="true" />
-
         </LinearLayout>
 
-        <!-- Selected Category Display -->
         <TextView
             android:id="@+id/tvSelectedCategory"
             android:layout_width="wrap_content"
@@ -84,29 +72,26 @@
             android:orientation="vertical"
             android:visibility="gone">
 
-            <!-- Title Input -->
+            <!-- Title -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:hint="Report Title">
-
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="text"
                     android:maxLines="2" />
-
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Details Input -->
+            <!-- Details -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:hint="Report Details">
-
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etDetails"
                     android:layout_width="match_parent"
@@ -114,7 +99,6 @@
                     android:inputType="textMultiLine"
                     android:minLines="4"
                     android:maxLines="8" />
-
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Image Upload -->
@@ -131,14 +115,12 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginBottom="16dp">
-
                 <Button
                     android:id="@+id/btnAddImage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Add Image"
                     android:layout_marginEnd="8dp" />
-
                 <TextView
                     android:id="@+id/tvImageCount"
                     android:layout_width="wrap_content"
@@ -146,10 +128,9 @@
                     android:text="0/3 images"
                     android:textSize="14sp"
                     android:layout_gravity="center_vertical" />
-
             </LinearLayout>
 
-            <!-- Image Preview -->
+            <!-- IMAGE PREVIEW RECYCLERVIEW (ONLY THIS) -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvImagePreview"
                 android:layout_width="match_parent"
@@ -164,7 +145,6 @@
                 android:layout_height="wrap_content"
                 android:text="Send Report"
                 android:layout_marginBottom="16dp" />
-
         </LinearLayout>
 
         <!-- Loading -->
@@ -176,5 +156,4 @@
             android:visibility="gone" />
 
     </LinearLayout>
-
 </ScrollView>

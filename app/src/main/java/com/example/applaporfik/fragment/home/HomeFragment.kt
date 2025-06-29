@@ -21,6 +21,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.example.applaporfik.R
+
 
 class HomeFragment : Fragment() {
 
@@ -63,31 +65,40 @@ class HomeFragment : Fragment() {
 
     private fun setupUI() {
         if (sessionManager.isLoggedIn()) {
-            // User is logged in - show "Lapor" button
+            // User is logged in - show cards
             binding.cardLogin.visibility = View.GONE
             binding.cardLapor.visibility = View.VISIBLE
-            
+            binding.cardMyReports.visibility = View.VISIBLE
+
             binding.btnLapor.setOnClickListener {
-                // Navigate to form fragment
-                val navController = requireActivity().supportFragmentManager
-                    .findFragmentById(com.example.applaporfik.R.id.nav_host_fragment_activity_main)
-                    ?.let { fragment ->
-                        androidx.navigation.fragment.NavHostFragment.findNavController(fragment)
-                    }
-                navController?.navigate(com.example.applaporfik.R.id.formFragment)
+                val navController = androidx.navigation.fragment.NavHostFragment.findNavController(
+                    requireActivity().supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main)!!
+                )
+                navController.navigate(R.id.formFragment)
+
             }
+
+            binding.btnMyReports.setOnClickListener {
+                val navController = androidx.navigation.fragment.NavHostFragment.findNavController(
+                    requireActivity().supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main)!!
+                )
+                navController.navigate(R.id.userReportPagerFragment)
+            }
+
         } else {
-            // User is not logged in - show "Login" button
+            // User not logged in
             binding.cardLogin.visibility = View.VISIBLE
             binding.cardLapor.visibility = View.GONE
-            
+            binding.cardMyReports.visibility = View.GONE
+
             binding.btnLogin.setOnClickListener {
-                // Navigate to login page
                 val intent = Intent(requireContext(), LoginActivity::class.java)
                 startActivity(intent)
             }
         }
     }
+
+
 
     private fun loadRecentFeedback() {
         // Show loading
@@ -155,7 +166,7 @@ class HomeFragment : Fragment() {
                 withContext(Dispatchers.Main) {
                     binding.progressBar.visibility = View.GONE
                     binding.textEmpty.visibility = View.VISIBLE
-                    binding.textEmpty.text = "No Reports"
+                    binding.textEmpty.text = " "
                     // Don't show error toast to avoid ANR, just log it
                     e.printStackTrace()
                 }
